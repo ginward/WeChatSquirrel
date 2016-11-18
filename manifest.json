@@ -18,6 +18,10 @@
      "activeTab"
   ],
   
+  "background": {
+    "scripts": ["background.js"]
+  },
+
   "content_scripts": [
       {
         "matches": ["*://wx.qq.com/*"],

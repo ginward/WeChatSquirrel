@@ -60,6 +60,7 @@ function checkInit(){
  * Call the startup procedures to start the app
  */
 function startApp(){
+	UIInit();
 	obtainFriendList();
 }
 
@@ -67,6 +68,13 @@ function startApp(){
 function query_db(loc){
 	port.postMessage({action:"query", city:loc});
 	console.log("query: "+loc);
+}
+
+//create the rotating globe
+function UIInit(){
+	var div = document.createElement( 'div' );
+	document.body.appendChild( div );
+	div.id="earth";
 }
 
 checkInit();

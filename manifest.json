@@ -18,7 +18,9 @@
      "storage",
      "activeTab"
   ],
-  
+  "web_accessible_resources": [
+    "*.jpg"
+  ],
   "background": {
     "scripts": ["background.js"]
   },
@@ -29,5 +31,7 @@
         "css":["squirrel.css"],
         "js": ["jquery.js", "squirrel.js"]
       }
-  ]
+  ], 
+  "content_security_policy": "script-src 'self' https://*.google.com; object-src 'self'"
+
 }

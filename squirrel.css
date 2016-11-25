@@ -12,7 +12,7 @@
 	top: 5px;
   	width: 100px;
 	height: 100px;
-	background: url("chrome-extension://__MSG_@@extension_id__/Earth-Color4096.jpg");
+	background: url("chrome-extension://__MSG_@@extension_id__/images/Earth-Color4096.jpg");
 	border-radius: 50%;
 	background-size: 210px;
 	box-shadow: inset 16px 0 40px 6px rgb(0, 0, 0),
@@ -26,4 +26,17 @@
 @keyframes rotate {
   from { background-position-x: 0px; }
   to { background-position-x: 210px; }
+}
+
+#map {
+	width: 50%;
+    height: 400px;
+    background-color: grey;
+    visibility: hidden;
+    position: absolute;
+	margin:auto;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
 }

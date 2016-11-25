@@ -19,7 +19,8 @@
      "activeTab"
   ],
   "web_accessible_resources": [
-    "*.jpg"
+    "images/*.jpg",
+    "map_apis/map_frame.html"
   ],
   "background": {
     "scripts": ["background.js"]
@@ -32,6 +33,6 @@
         "js": ["jquery.js", "squirrel.js"]
       }
   ], 
-  "content_security_policy": "script-src 'self' https://*.google.com; object-src 'self'"
+  "content_security_policy": "script-src 'self' https://*.googleapis.com; object-src 'self'"
 
 }

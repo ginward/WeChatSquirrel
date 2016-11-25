@@ -1,5 +1,5 @@
 const CONTACT_URL = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact";
-
+var CONST_MAP_FRAME = 'extension_map_id'; 
 var port = chrome.runtime.connect({name: "init_port"}); // port connection from squirrel.js to background.js
 var friends_loc = new Object();//stores the longitude and latitude of the friends
 
@@ -75,6 +75,29 @@ function UIInit(){
 	var div = document.createElement( 'div' );
 	document.body.appendChild( div );
 	div.id="earth";
+	div.onclick = showMap;
+
+	var map = document.createElement('div');
+	document.body.appendChild( map );
+	map.id="map";
+}
+
+function showMap(){
+	var mapViewerDOM = document.createElement('iframe');
+	mapViewerDOM.setAttribute('id', CONST_MAP_FRAME);
+	mapViewerDOM.setAttribute('src', chrome.extension.getURL('map_apis/map_frame.html'));
+	mapViewerDOM.setAttribute('frameBorder', '0');
+  	mapViewerDOM.setAttribute('width', '99.90%');
+  	mapViewerDOM.setAttribute('height', '100%');
+  	mapViewerDOM.setAttribute('style', 'position: fixed; top: 0; left: 0; overflow: hidden; z-index: 99999');
+	document.body.appendChild(mapViewerDOM);
+}
+
+//sendmessage to the map js
+function sendMessage(msg){
+	chrome.runtime.sendMessage(msg, function(response) {
+		
+	});
 }
 
 checkInit();

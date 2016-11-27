@@ -116,6 +116,8 @@ function showMap(){
 	console.log(friends_loc);
 	var mapViewerDOM = document.getElementById(CONST_MAP_FRAME);
 	mapViewerDOM.style.visibility = "visible";
+	var iframe = jQuery('iframe');
+	iframe.show();
 	for (var nick in friends_loc) {
 		var data={action:"draw", longitude:friends_loc[nick][0], latitude:friends_loc[nick][1], nick:nick};
 		chrome.runtime.sendMessage({sendBack:true, data:data});
@@ -132,8 +134,11 @@ function createMap(){
   	mapViewerDOM.setAttribute('style','	position: absolute;top: 50%; left: 50%; transform: translate(-50%, -50%);z-index:99999; visibility:hidden;width:500px;height:500px;');
 	document.body.appendChild(mapViewerDOM);
 	jQuery(document).add(parent.document).click(function(e) {
+    var iframe_obj = jQuery('iframe')[0];
     var iframe = jQuery('iframe');
-    if (iframe.style.visibility=='visible'&&!iframe.is(e.target) && iframe.has(e.target).length === 0) {
+    var earth = jQuery('#earth');
+    if (iframe_obj.style.visibility=='visible'&&!iframe.is(e.target) && iframe.has(e.target).length === 0&&!earth.is(e.target)&&earth.has(e.target).length===0) {
+    	console.log("called");
         iframe.hide();
     }
 });

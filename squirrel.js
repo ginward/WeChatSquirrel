@@ -2,11 +2,12 @@ const CONTACT_URL = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact";
 var CONST_MAP_FRAME = 'extension_map_id'; 
 var port = chrome.runtime.connect({name: "init_port"}); // port connection from squirrel.js to background.js
 var friends_loc = new Object();//stores the longitude and latitude of the friends
+var city_offset = new Object();//if more than two friends belong to the same city, offset one of them with rand so that there profile images do not offset each other
 
 port.onMessage.addListener(function(msg) {
 	if(msg.action=="check"&&msg.status==true){
 		//the location data has been initialized
-		alert("location data initialized!");
+		console.log("location data initialized!");
 		startApp();
 	} else if(msg.action=="check"&&msg.status==false){
 		alert("map initializing");
@@ -18,6 +19,33 @@ port.onMessage.addListener(function(msg) {
 		arr.push(longitude);
 		arr.push(latitude);
 		var city=msg.city;
+		if(city in city_offset){
+			console.log("duplicate city found: processing");
+			console.log("before long:"+city_offset[city][0]+" lat:"+city_offset[city][1]);
+			var tmp_lng=city_offset[city][0];
+			var tmp_lat=city_offset[city][1];
+			var rand = 0.001 * Math.floor((Math.random() * 10) + 1);
+			console.log("random:"+rand);
+			var seed_x = Math.floor((Math.random() * 10) + 1);
+			var seed_y = Math.floor((Math.random() * 10) + 1);
+			//distribute different coordinates evenly
+			if(seed_x%2==0&&seed_y%2==0){
+				city_offset[city][0]=tmp_lng+rand;
+				city_offset[city][1]=tmp_lat+rand;
+			} else if(seed_x%2!=0&&seed_y%2==0) {
+				city_offset[city][0]=tmp_lng-rand;
+				city_offset[city][1]=tmp_lat+rand;
+			} else if(seed_x%2==0&&seed_y%2!=0) {
+				city_offset[city][0]=tmp_lng+rand;
+				city_offset[city][1]=tmp_lat-rand;
+			} else if(seed_x%2!=0&&seed_y%2!=0) {
+				city_offset[city][0]=tmp_lng-rand;
+				city_offset[city][1]=tmp_lat-rand;
+			}
+			console.log("after long:"+city_offset[city][0]+" lat:"+city_offset[city][1]);
+		} else {
+			city_offset[city]=arr;
+		}
 		friends_loc[nick]=arr;
 		console.log(friends_loc[nick]);
 	}
@@ -26,10 +54,10 @@ port.onMessage.addListener(function(msg) {
 chrome.runtime.onConnect.addListener(function(new_port) {
 	new_port.onMessage.addListener(function(msg) {
 		if(msg.action=="init"&&msg.status==true){
-				alert("location data initialized!")
+				console.log("location data initialized!")
 				startApp();
 			} else if(msg.action=="init"&&msg.status==false){
-				alert("location data init failure");
+				console("location data init failure");
 		}
 	});
 });

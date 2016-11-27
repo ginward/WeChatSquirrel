@@ -3,23 +3,30 @@
  */
 
 var map;  //the google map object
-
+var avatar_url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?username=";
 chrome.runtime.onMessage.addListener(
   	function(request) {
-  		console.log("goooo");
-		console.log(request);
   		if(request.data!=null&&request.data.action=="draw"){
   			console.log("message!!!");
   			var latitude=parseFloat(request.data.latitude);
-  			var longtitude=parseFloat(request.data.longtitude);
+  			var longitude=parseFloat(request.data.longitude);
   			var nick=request.data.nick;
-  			var loc={lat:latitude, lng:longtitude};
-  			console.log(map);
+  			var loc={lat:latitude, lng:longitude};
+  			console.log(nick);
 			var marker = new google.maps.Marker({
 				position: loc,
-				map: map
+				map: map,
+				title:nick
 			});
-  		}
+			marker.setMap(map);
+			google.maps.event.addListener(marker , 'click', function(){
+			  var infowindow = new google.maps.InfoWindow({
+			    content:nick,
+			    position: loc,
+			  });
+			  infowindow.open(map);
+			});
+  		} 
 	}
 );
 
@@ -29,4 +36,5 @@ function initMap(){
 	  zoom: 1,
 	  center: uluru
 	});
+
 }

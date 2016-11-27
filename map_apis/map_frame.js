@@ -15,7 +15,7 @@ chrome.runtime.onMessage.addListener(
   			var loc={lat:latitude, lng:longitude};
   			var icon = {
 				url: icons[nick], // url
-				scaledSize: new google.maps.Size(20, 20), // scaled size
+				scaledSize: new google.maps.Size(25, 25), // scaled size
 				origin: new google.maps.Point(0,0), // origin
 				anchor: new google.maps.Point(0, 0) // anchor
   			}

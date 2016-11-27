@@ -3,6 +3,7 @@
  */
 var current_tab_id; //the current tab that background script is connected to
 var init_port; //port connection from background.js to squirrel.js
+var EOF__FLAG__ = "EOF__FLAG__";
 //indexedDB
 window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
 var db; //the database object
@@ -132,7 +133,11 @@ chrome.runtime.onConnect.addListener(function(port) {
 				checkInitStatus(port, msg);
 				console.log("checking");
 			} else if (msg.action=="query"){
-				query(msg.city, port, msg.nick);
+				if(msg.city==EOF__FLAG__||msg.nick==EOF__FLAG__){
+					port.postMessage({action:"query", city:EOF__FLAG__, longitude:EOF__FLAG__, latitude:EOF__FLAG__, nick:EOF__FLAG__});
+				} else {
+					query(msg.city, port, msg.nick);
+				}
 			} 
 		});
 });

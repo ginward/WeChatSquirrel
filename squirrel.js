@@ -3,6 +3,7 @@ var CONST_MAP_FRAME = 'extension_map_id';
 var port = chrome.runtime.connect({name: "init_port"}); // port connection from squirrel.js to background.js
 var friends_loc = new Object();//stores the longitude and latitude of the friends
 var city_offset = new Object();//if more than two friends belong to the same city, offset one of them with rand so that there profile images do not overlap each other
+var EOF__FLAG__ = "EOF__FLAG__";//signal the end of list
 
 port.onMessage.addListener(function(msg) {
 	if(msg.action=="check"&&msg.status==true){
@@ -12,42 +13,47 @@ port.onMessage.addListener(function(msg) {
 	} else if(msg.action=="check"&&msg.status==false){
 		alert("map initializing");
 	} else if(msg.action=="query"){
-		var longitude=msg.longitude;
-		var latitude=msg.latitude;
-		var nick=msg.nick;
-		var arr=new Array();
-		arr.push(longitude);
-		arr.push(latitude);
-		var city=msg.city;
-		if(city in city_offset){
-			console.log("duplicate city found: processing");
-			console.log("before long:"+city_offset[city][0]+" lat:"+city_offset[city][1]);
-			var tmp_lng=city_offset[city][0];
-			var tmp_lat=city_offset[city][1];
-			var rand = 0.001 * Math.floor((Math.random() * 10) + 1);
-			console.log("random:"+rand);
-			var seed_x = Math.floor((Math.random() * 10) + 1);
-			var seed_y = Math.floor((Math.random() * 10) + 1);
-			//distribute different coordinates evenly
-			if(seed_x%2==0&&seed_y%2==0){
-				city_offset[city][0]=tmp_lng+rand;
-				city_offset[city][1]=tmp_lat+rand;
-			} else if(seed_x%2!=0&&seed_y%2==0) {
-				city_offset[city][0]=tmp_lng-rand;
-				city_offset[city][1]=tmp_lat+rand;
-			} else if(seed_x%2==0&&seed_y%2!=0) {
-				city_offset[city][0]=tmp_lng+rand;
-				city_offset[city][1]=tmp_lat-rand;
-			} else if(seed_x%2!=0&&seed_y%2!=0) {
-				city_offset[city][0]=tmp_lng-rand;
-				city_offset[city][1]=tmp_lat-rand;
-			}
-			console.log("after long:"+city_offset[city][0]+" lat:"+city_offset[city][1]);
-		} else {
-			city_offset[city]=arr;
+		if(msg.longitude==EOF__FLAG__||msg.latitude==EOF__FLAG__||msg.city==EOF__FLAG__||msg.nick==EOF__FLAG__){
+
 		}
-		friends_loc[nick]=arr;
-		console.log(friends_loc[nick]);
+		else {
+			var longitude=msg.longitude;
+			var latitude=msg.latitude;
+			var nick=msg.nick;
+			var arr=new Array();
+			arr.push(longitude);
+			arr.push(latitude);
+			var city=msg.city;
+			if(city in city_offset){
+				console.log("duplicate city found: processing");
+				console.log("before long:"+city_offset[city][0]+" lat:"+city_offset[city][1]);
+				var tmp_lng=city_offset[city][0];
+				var tmp_lat=city_offset[city][1];
+				var rand = 0.001 * Math.floor((Math.random() * 10) + 1);
+				console.log("random:"+rand);
+				var seed_x = Math.floor((Math.random() * 10) + 1);
+				var seed_y = Math.floor((Math.random() * 10) + 1);
+				//distribute different coordinates evenly
+				if(seed_x%2==0&&seed_y%2==0){
+					city_offset[city][0]=tmp_lng+rand;
+					city_offset[city][1]=tmp_lat+rand;
+				} else if(seed_x%2!=0&&seed_y%2==0) {
+					city_offset[city][0]=tmp_lng-rand;
+					city_offset[city][1]=tmp_lat+rand;
+				} else if(seed_x%2==0&&seed_y%2!=0) {
+					city_offset[city][0]=tmp_lng+rand;
+					city_offset[city][1]=tmp_lat-rand;
+				} else if(seed_x%2!=0&&seed_y%2!=0) {
+					city_offset[city][0]=tmp_lng-rand;
+					city_offset[city][1]=tmp_lat-rand;
+				}
+				console.log("after long:"+city_offset[city][0]+" lat:"+city_offset[city][1]);
+			} else {
+				city_offset[city]=arr;
+			}
+			friends_loc[nick]=arr;
+			console.log(friends_loc[nick]);
+		}
 	}
 });
 
@@ -75,8 +81,14 @@ function obtainFriendList(){
 			var member_name=member["NickName"];
 			var member_location=member["City"];
 			query_db(member_location, member_name);
+			if(i==member_list.length-1){
+				query_db(EOF__FLAG__, EOF__FLAG__);
+			}
 			var data_nick={action:"username", nick:member_name, username:member_username};
 			chrome.runtime.sendMessage({sendBack:true, data:data_nick});
+			if(i==member_list.length-1){
+				chrome.runtime.sendMessage({sendBack:true, data:{action:"username", nick:EOF__FLAG__, username:EOF__FLAG__}});
+			}
 		}
 	});
 }
@@ -90,7 +102,6 @@ function checkInit(){
  * Call the startup procedures to start the app
  */
 function startApp(){
-	UIInit();
 	obtainFriendList();
 }
 
@@ -110,18 +121,20 @@ function UIInit(){
 	var map = document.createElement('div');
 	document.body.appendChild( map );
 	map.id="map";
+	checkInit();
 }
 
 function showMap(){
+	//draw friends on the map
+	for (var nick in friends_loc) {
+		var data={action:"draw", longitude:friends_loc[nick][0], latitude:friends_loc[nick][1], nick:nick};
+		chrome.runtime.sendMessage({sendBack:true, data:data});
+	}
 	console.log(friends_loc);
 	var mapViewerDOM = document.getElementById(CONST_MAP_FRAME);
 	mapViewerDOM.style.visibility = "visible";
 	var iframe = jQuery('iframe');
 	iframe.show();
-	for (var nick in friends_loc) {
-		var data={action:"draw", longitude:friends_loc[nick][0], latitude:friends_loc[nick][1], nick:nick};
-		chrome.runtime.sendMessage({sendBack:true, data:data});
-	}
 }
 
 function createMap(){
@@ -144,4 +157,4 @@ function createMap(){
 });
 }
 
-checkInit();
+UIInit();

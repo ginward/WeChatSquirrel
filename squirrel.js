@@ -2,7 +2,7 @@ const CONTACT_URL = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact";
 var CONST_MAP_FRAME = 'extension_map_id'; 
 var port = chrome.runtime.connect({name: "init_port"}); // port connection from squirrel.js to background.js
 var friends_loc = new Object();//stores the longitude and latitude of the friends
-var city_offset = new Object();//if more than two friends belong to the same city, offset one of them with rand so that there profile images do not offset each other
+var city_offset = new Object();//if more than two friends belong to the same city, offset one of them with rand so that there profile images do not overlap each other
 
 port.onMessage.addListener(function(msg) {
 	if(msg.action=="check"&&msg.status==true){
@@ -114,6 +114,8 @@ function UIInit(){
 
 function showMap(){
 	console.log(friends_loc);
+	var mapViewerDOM = document.getElementById(CONST_MAP_FRAME);
+	mapViewerDOM.style.visibility = "visible";
 	for (var nick in friends_loc) {
 		var data={action:"draw", longitude:friends_loc[nick][0], latitude:friends_loc[nick][1], nick:nick};
 		chrome.runtime.sendMessage({sendBack:true, data:data});
@@ -127,7 +129,14 @@ function createMap(){
 	mapViewerDOM.setAttribute('frameBorder', '0');
   	mapViewerDOM.setAttribute('width', '99.90%');
   	mapViewerDOM.setAttribute('height', '100%');
+  	mapViewerDOM.setAttribute('style','	position: absolute;top: 50%; left: 50%; transform: translate(-50%, -50%);z-index:99999; visibility:hidden;width:500px;height:500px;');
 	document.body.appendChild(mapViewerDOM);
+	jQuery(document).add(parent.document).click(function(e) {
+    var iframe = jQuery('iframe');
+    if (iframe.style.visibility=='visible'&&!iframe.is(e.target) && iframe.has(e.target).length === 0) {
+        iframe.hide();
+    }
+});
 }
 
 checkInit();

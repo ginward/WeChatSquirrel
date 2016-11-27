@@ -4,6 +4,7 @@
 
 var map;  //the google map object
 var avatar_url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?username=";
+var icons = new Object();
 chrome.runtime.onMessage.addListener(
   	function(request) {
   		if(request.data!=null&&request.data.action=="draw"){
@@ -12,12 +13,19 @@ chrome.runtime.onMessage.addListener(
   			var longitude=parseFloat(request.data.longitude);
   			var nick=request.data.nick;
   			var loc={lat:latitude, lng:longitude};
-  			console.log(nick);
+  			var icon = {
+				url: icons[nick], // url
+				scaledSize: new google.maps.Size(20, 20), // scaled size
+				origin: new google.maps.Point(0,0), // origin
+				anchor: new google.maps.Point(0, 0) // anchor
+  			}
 			var marker = new google.maps.Marker({
 				position: loc,
 				map: map,
-				title:nick
+				title:nick,
+				icon:icon
 			});
+			console.log(icons[nick]);
 			marker.setMap(map);
 			google.maps.event.addListener(marker , 'click', function(){
 			  var infowindow = new google.maps.InfoWindow({
@@ -26,6 +34,12 @@ chrome.runtime.onMessage.addListener(
 			  });
 			  infowindow.open(map);
 			});
+  		} else if (request.data!=null && request.data.action=="username"){
+  			//receive usernames
+  			var nick=request.data.nick;
+  			var username=request.data.username;
+  			icons[nick]=avatar_url+username;
+  			console.log(request.data);
   		} 
 	}
 );

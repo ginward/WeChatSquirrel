@@ -138,7 +138,7 @@ chrome.runtime.onConnect.addListener(function(port) {
 });
 
 chrome.runtime.onMessage.addListener(function(message, sender) {
-    if (message.sendBack&&message.data.action!=null&&message.data.action=="draw") {
+    if (message.sendBack&&message.data.action!=null&&(message.data.action=="draw"||message.data.action=="username")) {
  				chrome.tabs.query(
 				    { currentWindow: true, active: true },
 				    function (tabArray) { 

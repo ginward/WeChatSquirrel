@@ -47,6 +47,8 @@ function obtainFriendList(){
 			var member_name=member["NickName"];
 			var member_location=member["City"];
 			query_db(member_location, member_name);
+			var data_nick={action:"username", nick:member_name, username:member_username};
+			chrome.runtime.sendMessage({sendBack:true, data:data_nick});
 		}
 	});
 }

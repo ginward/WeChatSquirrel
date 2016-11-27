@@ -103,7 +103,7 @@ function init_db(callback){
 }
 
 //query the database
-function query(city, port){
+function query(city, port, nick){
 	init_db(function(){
 		var transaction = db.transaction(["squirrel"], "readwrite");
 		transaction.oncomplete = function(event) {
@@ -119,7 +119,7 @@ function query(city, port){
 			if(event.target.result!=null){
 				var longitude=event.target.result.longitude;
 				var latitude=event.target.result.latitude;
-				port.postMessage({action:"query", city:city, longitude:longitude, latitude:latitude});
+				port.postMessage({action:"query", city:city, longitude:longitude, latitude:latitude, nick:nick});
 			}
 		};
 	});
@@ -131,8 +131,21 @@ chrome.runtime.onConnect.addListener(function(port) {
 			if(msg.action=="check"){
 				checkInitStatus(port, msg);
 				console.log("checking");
-			} if (msg.action=="query"){
-				query(msg.city, port);
-			}
+			} else if (msg.action=="query"){
+				query(msg.city, port, msg.nick);
+			} 
 		});
 });
+
+chrome.runtime.onMessage.addListener(function(message, sender) {
+    if (message.sendBack&&message.data.action!=null&&message.data.action=="draw") {
+ 				chrome.tabs.query(
+				    { currentWindow: true, active: true },
+				    function (tabArray) { 
+				    	current_tab_id=tabArray[0].id; 
+				    	chrome.tabs.sendMessage(current_tab_id, message);
+				    }
+				);	
+    }
+});
+

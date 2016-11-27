@@ -13,12 +13,13 @@ port.onMessage.addListener(function(msg) {
 	} else if(msg.action=="query"){
 		var longitude=msg.longitude;
 		var latitude=msg.latitude;
+		var nick=msg.nick;
 		var arr=new Array();
 		arr.push(longitude);
 		arr.push(latitude);
 		var city=msg.city;
-		friends_loc[city]=arr;
-		console.log("result: "+friends_loc[city]);
+		friends_loc[nick]=arr;
+		console.log(friends_loc[nick]);
 	}
 });
 
@@ -45,9 +46,8 @@ function obtainFriendList(){
 			var member_username=member["UserName"];
 			var member_name=member["NickName"];
 			var member_location=member["City"];
-			query_db(member_location);
+			query_db(member_location, member_name);
 		}
-		console.log(friends_loc);
 	});
 }
 
@@ -65,8 +65,8 @@ function startApp(){
 }
 
 //query the background script for location data
-function query_db(loc){
-	port.postMessage({action:"query", city:loc});
+function query_db(loc, name){
+	port.postMessage({action:"query", city:loc, nick:name});
 	console.log("query: "+loc);
 }
 
@@ -76,28 +76,28 @@ function UIInit(){
 	document.body.appendChild( div );
 	div.id="earth";
 	div.onclick = showMap;
-
+	createMap();
 	var map = document.createElement('div');
 	document.body.appendChild( map );
 	map.id="map";
 }
 
 function showMap(){
+	console.log(friends_loc);
+	for (var nick in friends_loc) {
+		var data={action:"draw", longitude:friends_loc[nick][0], latitude:friends_loc[nick][1], nick:nick};
+		chrome.runtime.sendMessage({sendBack:true, data:data});
+	}
+}
+
+function createMap(){
 	var mapViewerDOM = document.createElement('iframe');
 	mapViewerDOM.setAttribute('id', CONST_MAP_FRAME);
 	mapViewerDOM.setAttribute('src', chrome.extension.getURL('map_apis/map_frame.html'));
 	mapViewerDOM.setAttribute('frameBorder', '0');
   	mapViewerDOM.setAttribute('width', '99.90%');
   	mapViewerDOM.setAttribute('height', '100%');
-  	mapViewerDOM.setAttribute('style', 'position: fixed; top: 0; left: 0; overflow: hidden; z-index: 99999');
 	document.body.appendChild(mapViewerDOM);
-}
-
-//sendmessage to the map js
-function sendMessage(msg){
-	chrome.runtime.sendMessage(msg, function(response) {
-		
-	});
 }
 
 checkInit();

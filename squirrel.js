@@ -4,6 +4,8 @@ var port = chrome.runtime.connect({name: "init_port"}); // port connection from 
 var friends_loc = new Object();//stores the longitude and latitude of the friends
 var city_offset = new Object();//if more than two friends belong to the same city, offset one of them with rand so that there profile images do not overlap each other
 var EOF__FLAG__ = "EOF__FLAG__";//signal the end of list
+var init = false;
+var auto_launch=false;
 
 port.onMessage.addListener(function(msg) {
 	if(msg.action=="check"&&msg.status==true){
@@ -14,7 +16,13 @@ port.onMessage.addListener(function(msg) {
 		alert("map initializing");
 	} else if(msg.action=="query"){
 		if(msg.longitude==EOF__FLAG__||msg.latitude==EOF__FLAG__||msg.city==EOF__FLAG__||msg.nick==EOF__FLAG__){
-
+			init=true;
+			//launch the application by default
+			if (auto_launch) {
+				console.log("*******************");
+				console.log(friends_loc);
+				showMap();
+			}
 		}
 		else {
 			var longitude=msg.longitude;
@@ -52,6 +60,9 @@ port.onMessage.addListener(function(msg) {
 				city_offset[city]=arr;
 			}
 			friends_loc[nick]=arr;
+			//draw the friend on the map
+			var data={action:"draw", longitude:friends_loc[nick][0], latitude:friends_loc[nick][1], nick:nick};
+			chrome.runtime.sendMessage({sendBack:true, data:data});
 			console.log(friends_loc[nick]);
 		}
 	}
@@ -126,15 +137,16 @@ function UIInit(){
 
 function showMap(){
 	//draw friends on the map
-	for (var nick in friends_loc) {
-		var data={action:"draw", longitude:friends_loc[nick][0], latitude:friends_loc[nick][1], nick:nick};
-		chrome.runtime.sendMessage({sendBack:true, data:data});
+	if(init){
+		console.log(friends_loc);
+		var mapViewerDOM = document.getElementById(CONST_MAP_FRAME);
+		mapViewerDOM.style.visibility = "visible";
+		var iframe = jQuery('iframe');
+		iframe.show();
+	} else {
+		auto_launch=true;
+		alert("Still initializing... Will launch after initialization.")
 	}
-	console.log(friends_loc);
-	var mapViewerDOM = document.getElementById(CONST_MAP_FRAME);
-	mapViewerDOM.style.visibility = "visible";
-	var iframe = jQuery('iframe');
-	iframe.show();
 }
 
 function createMap(){

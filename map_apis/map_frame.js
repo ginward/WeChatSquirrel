@@ -50,5 +50,4 @@ function initMap(){
 	  zoom: 1,
 	  center: uluru
 	});
-
 }

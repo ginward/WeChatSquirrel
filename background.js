@@ -138,7 +138,14 @@ chrome.runtime.onConnect.addListener(function(port) {
 				} else {
 					query(msg.city, port, msg.nick);
 				}
-			} 
+			} else if (msg.action=="cookie"){
+			    chrome.cookies.get({"url": "https://wx.qq.com", "name": "webwx_data_ticket"}, function(cookie) {
+			    	if(cookie)
+						port.postMessage({action:"cookie", value:cookie.value});
+					else 
+						port.postMessage({action:"cookie", value:null});
+			    });
+			}
 		});
 });
 

@@ -6,6 +6,7 @@ var city_offset = new Object();//if more than two friends belong to the same cit
 var EOF__FLAG__ = "EOF__FLAG__";//signal the end of list
 var init = false;
 var auto_launch=false;
+var loggedin=false; 
 
 port.onMessage.addListener(function(msg) {
 	if(msg.action=="check"&&msg.status==true){
@@ -64,6 +65,13 @@ port.onMessage.addListener(function(msg) {
 			var data={action:"draw", longitude:friends_loc[nick][0], latitude:friends_loc[nick][1], nick:nick};
 			chrome.runtime.sendMessage({sendBack:true, data:data});
 			console.log(friends_loc[nick]);
+		}
+	} else if (msg.action=="cookie"){
+		var value = msg.value;
+		console.log(value);
+		if(value&&loggedin==false){
+			loggedin=true;
+			checkInit();
 		}
 	}
 });
@@ -186,8 +194,9 @@ function createMap(){
 	setTimeout(function(){ document.getElementById("squirrel_hint").remove(); }, 5000);
  }
 
+//check the cookie
 function nodeInsertedCallback(event) {
-    console.log(event);
+    port.postMessage({action:"cookie"});
 };
 
 document.addEventListener('DOMNodeInserted', nodeInsertedCallback);

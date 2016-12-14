@@ -149,7 +149,7 @@ function showMap(){
 		iframe.show();
 	} else {
 		auto_launch=true;
-		alert("Still initializing... Will launch after initialization.")
+		hint("Still initializing... Will launch after initialization.")
 	}
 }
 

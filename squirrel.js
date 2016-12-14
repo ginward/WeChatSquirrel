@@ -13,7 +13,7 @@ port.onMessage.addListener(function(msg) {
 		console.log("location data initialized!");
 		startApp();
 	} else if(msg.action=="check"&&msg.status==false){
-		alert("map initializing");
+		hint("map initializing");
 	} else if(msg.action=="query"){
 		if(msg.longitude==EOF__FLAG__||msg.latitude==EOF__FLAG__||msg.city==EOF__FLAG__||msg.nick==EOF__FLAG__){
 			init=true;
@@ -86,19 +86,23 @@ function obtainFriendList(){
 		var data = JSON.parse(res);
 		var member_count=data['MemberCount'];
 		var member_list=data['MemberList'];
-		for(var i=0;i<member_list.length;i++){
-			var member=member_list[i];
-			var member_username=member["UserName"];
-			var member_name=member["NickName"];
-			var member_location=member["City"];
-			query_db(member_location, member_name);
-			if(i==member_list.length-1){
-				query_db(EOF__FLAG__, EOF__FLAG__);
-			}
-			var data_nick={action:"username", nick:member_name, username:member_username};
-			chrome.runtime.sendMessage({sendBack:true, data:data_nick});
-			if(i==member_list.length-1){
-				chrome.runtime.sendMessage({sendBack:true, data:{action:"username", nick:EOF__FLAG__, username:EOF__FLAG__}});
+		if (member_count==0) {
+			hint("Please login to continue.");
+		} else {
+			for(var i=0;i<member_list.length;i++){
+				var member=member_list[i];
+				var member_username=member["UserName"];
+				var member_name=member["NickName"];
+				var member_location=member["City"];
+				query_db(member_location, member_name);
+				if(i==member_list.length-1){
+					query_db(EOF__FLAG__, EOF__FLAG__);
+				}
+				var data_nick={action:"username", nick:member_name, username:member_username};
+				chrome.runtime.sendMessage({sendBack:true, data:data_nick});
+				if(i==member_list.length-1){
+					chrome.runtime.sendMessage({sendBack:true, data:{action:"username", nick:EOF__FLAG__, username:EOF__FLAG__}});
+				}
 			}
 		}
 	});
@@ -159,14 +163,33 @@ function createMap(){
   	mapViewerDOM.setAttribute('style','	position: absolute;top: 50%; left: 50%; transform: translate(-50%, -50%);z-index:99999; visibility:hidden;width:500px;height:500px;');
 	document.body.appendChild(mapViewerDOM);
 	jQuery(document).add(parent.document).click(function(e) {
-    var iframe_obj = jQuery('iframe')[0];
-    var iframe = jQuery('iframe');
-    var earth = jQuery('#earth');
-    if (iframe_obj.style.visibility=='visible'&&!iframe.is(e.target) && iframe.has(e.target).length === 0&&!earth.is(e.target)&&earth.has(e.target).length===0) {
-    	console.log("called");
-        iframe.hide();
-    }
-});
+	    var iframe_obj = jQuery('iframe')[0];
+	    var iframe = jQuery('iframe');
+	    var earth = jQuery('#earth');
+	    if (iframe_obj.style.visibility=='visible'&&!iframe.is(e.target) && iframe.has(e.target).length === 0&&!earth.is(e.target)&&earth.has(e.target).length===0) {
+	    	console.log("called");
+	        iframe.hide();
+	    }
+	});
 }
+
+ //show the hint of the function
+ function hint(msg){
+ 	var div = document.createElement( 'div' );
+	document.body.appendChild( div );
+	div.id="squirrel_hint";
+	
+	var hint_span = document.createElement( 'span' );
+	hint_span.innerHTML = msg;
+	div.appendChild(hint_span);
+
+	setTimeout(function(){ document.getElementById("squirrel_hint").remove(); }, 5000);
+ }
+
+function nodeInsertedCallback(event) {
+    console.log(event);
+};
+
+document.addEventListener('DOMNodeInserted', nodeInsertedCallback);
 
 UIInit();

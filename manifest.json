@@ -13,10 +13,11 @@
     "<all_urls>",
     "webRequest",
     "webRequestBlocking",
-     "unlimitedStorage",
-     "tabs",
-     "storage",
-     "activeTab"
+    "cookies",
+    "unlimitedStorage",
+    "tabs",
+    "storage",
+    "activeTab"
   ],
   "web_accessible_resources": [
     "images/*.jpg",

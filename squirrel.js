@@ -1,4 +1,4 @@
-const CONTACT_URL = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact";
+var CONTACT_URL = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact";
 var CONST_MAP_FRAME = 'extension_map_id'; 
 var port = chrome.runtime.connect({name: "init_port"}); // port connection from squirrel.js to background.js
 var friends_loc = new Object();//stores the longitude and latitude of the friends
@@ -7,7 +7,7 @@ var EOF__FLAG__ = "EOF__FLAG__";//signal the end of list
 var init = false;
 var auto_launch=false;
 var loggedin=false; 
-
+var host = "wx.qq.com";
 port.onMessage.addListener(function(msg) {
 	if(msg.action=="check"&&msg.status==true){
 		//the location data has been initialized
@@ -61,6 +61,8 @@ port.onMessage.addListener(function(msg) {
 				city_offset[city]=arr;
 			}
 			friends_loc[nick]=arr;
+			var draw_url={action:"urldraw", url_host:host};
+			chrome.runtime.sendMessage({sendBack:true, data:draw_url});
 			//draw the friend on the map
 			var data={action:"draw", longitude:friends_loc[nick][0], latitude:friends_loc[nick][1], nick:nick};
 			chrome.runtime.sendMessage({sendBack:true, data:data});
@@ -73,6 +75,12 @@ port.onMessage.addListener(function(msg) {
 			loggedin=true;
 			checkInit();
 		}
+	} else if (msg.action=="url_validate"){
+		host = msg.url;
+		if (host=="web.wechat.com") {
+			CONTACT_URL = "https://web.wechat.com/cgi-bin/mmwebwx-bin/webwxgetcontact";
+		}
+		UIInit();
 	}
 });
 
@@ -106,7 +114,7 @@ function obtainFriendList(){
 				if(i==member_list.length-1){
 					query_db(EOF__FLAG__, EOF__FLAG__);
 				}
-				var data_nick={action:"username", nick:member_name, username:member_username};
+				var data_nick={action:"username", nick:member_name, username:member_username, host:host};
 				chrome.runtime.sendMessage({sendBack:true, data:data_nick});
 				if(i==member_list.length-1){
 					chrome.runtime.sendMessage({sendBack:true, data:{action:"username", nick:EOF__FLAG__, username:EOF__FLAG__}});
@@ -201,4 +209,6 @@ function nodeInsertedCallback(event) {
 
 document.addEventListener('DOMNodeInserted', nodeInsertedCallback);
 
-UIInit();
+
+//initialize the plugin
+port.postMessage({action:"url_validate"});

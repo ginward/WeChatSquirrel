@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "WeChatSquirrel",
   "description": "Helps you use web WeChat with more fun",
-  "version": "1.0",
+  "version": "1.1",
 
   "browser_action": {
     "default_icon": "icon.png",
@@ -29,7 +29,7 @@
 
   "content_scripts": [
       {
-        "matches": ["*://wx.qq.com/*"],
+        "matches": ["*://wx.qq.com/*","*://web.wechat.com/"],
         "css":["squirrel.css"],
         "js": ["lib/jquery.js", "squirrel.js"]
       }

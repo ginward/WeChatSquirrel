@@ -4,6 +4,7 @@
 var current_tab_id; //the current tab that background script is connected to
 var init_port; //port connection from background.js to squirrel.js
 var EOF__FLAG__ = "EOF__FLAG__";
+var host = "wx.qq.com";
 //indexedDB
 window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
 var db; //the database object
@@ -139,18 +140,35 @@ chrome.runtime.onConnect.addListener(function(port) {
 					query(msg.city, port, msg.nick);
 				}
 			} else if (msg.action=="cookie"){
-			    chrome.cookies.get({"url": "https://wx.qq.com", "name": "webwx_data_ticket"}, function(cookie) {
+			    chrome.cookies.get({"url": "https://"+host, "name": "webwx_data_ticket"}, function(cookie) {
 			    	if(cookie)
 						port.postMessage({action:"cookie", value:cookie.value});
 					else 
 						port.postMessage({action:"cookie", value:null});
 			    });
+			} else if (msg.action=="url_validate"){
+				chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
+				    var url = tabs[0].url;
+				    var l = getLocation(url);
+				    port.postMessage({action:"url_validate", url:getLocation(url).hostname});
+				    host = getLocation(url).hostname;
+				});
 			}
 		});
 });
 
+/*
+ * Get the host name
+ */
+
+var getLocation = function(href) {
+    var l = document.createElement("a");
+    l.href = href;
+    return l;
+};
+
 chrome.runtime.onMessage.addListener(function(message, sender) {
-    if (message.sendBack&&message.data.action!=null&&(message.data.action=="draw"||message.data.action=="username")) {
+    if (message.sendBack&&message.data.action!=null&&(message.data.action=="draw"||message.data.action=="username")||message.data.action=="urldraw") {
  				chrome.tabs.query(
 				    { currentWindow: true, active: true },
 				    function (tabArray) { 

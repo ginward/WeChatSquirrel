@@ -7,7 +7,12 @@ var avatar_url = "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?username=";
 var icons = new Object();
 chrome.runtime.onMessage.addListener(
   	function(request) {
-  		if(request.data!=null&&request.data.action=="draw"){
+  		if (request.data!=null && request.data.action=="urldraw") {
+  			if (request.data.url=="web.wechat.com"){
+  				avatar_url="https://web.wechat.com/cgi-bin/mmwebwx-bin/webwxgeticon?username=";
+  			}
+  			console.log("draw_url");
+  		}   else if(request.data!=null&&request.data.action=="draw"){
   			console.log("message!!!");
   			var latitude=parseFloat(request.data.latitude);
   			var longitude=parseFloat(request.data.longitude);
@@ -35,12 +40,14 @@ chrome.runtime.onMessage.addListener(
 			  infowindow.open(map);
 			});
   		} else if (request.data!=null && request.data.action=="username"){
+  			if (request.data.host=="web.wechat.com")
+  				avatar_url="https://web.wechat.com/cgi-bin/mmwebwx-bin/webwxgeticon?username=";
   			//receive usernames
   			var nick=request.data.nick;
   			var username=request.data.username;
   			icons[nick]=avatar_url+username;
   			console.log(request.data);
-  		} 
+  		}
 	}
 );
 
